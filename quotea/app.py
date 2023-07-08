@@ -1,5 +1,5 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Footer, Tabs, DataTable
+from textual.widgets import Footer, Tabs, Tab, DataTable
 
 BOOK_ROWS = [
     ("title", "author", "start_date", "end_date"),
@@ -52,7 +52,10 @@ class QuoteaApp(App):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Tabs("Books", "Quotes")
+        yield Tabs(
+            Tab("Books", id="books"),
+            Tab("Quotes", id="quotes"),
+        )
         yield DataTable()
         yield Footer()
 
@@ -61,16 +64,21 @@ class QuoteaApp(App):
 
     def on_tabs_tab_activated(self, event: Tabs.TabActivated) -> None:
         table = self.query_one(DataTable)
+        table.cursor_type = "row"
+        table.zebra_stripes = True
+
         if event.tab is None:
             table.visible = False
         else:
-            table.clear()
+            table.clear(True)
             table.visible = True
-            table.zebra_stripes = True
-            table.cursor_type = "row"
 
-            table.add_columns(*BOOK_ROWS[0])
-            table.add_rows(BOOK_ROWS[1:])
+            if event.tab.id == "books":
+                table.add_columns(*BOOK_ROWS[0])
+                table.add_rows(BOOK_ROWS[1:])
+            if event.tab.id == "quotes":
+                table.add_columns(*QUOTE_ROWS[0])
+                table.add_rows(QUOTE_ROWS[1:])
 
 
 if __name__ == "__main__":
